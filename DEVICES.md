@@ -109,6 +109,7 @@
 
 - Airton air conditioner
 - Airwoods fresh air heat pump
+- Argo Apollo 12HP wall mounted monoblock inverter air conditioner
 - Arlec PA1123BKHA portable air conditioner
 - Ballu Aura air conditioner
 - Be Cool BC14KL2101F

@@ -1,0 +1,203 @@
+# Argo Apollo 12HP - wall mounted monoblock inverter air conditioner without
+# external/outdoor unit (model PA001). The full refrigerant circuit is housed
+# in a single indoor unit fixed to an outer wall, connected to the outside via
+# two wall penetrations (intake/exhaust); not a portable/mobile unit.
+#
+# DP mapping obtained via TinyTuya cloud wizard (device listing) and confirmed
+# against a live local poll of the physical unit.
+#
+# DP  1  switch            bool          power on/off
+# DP  2  temp_set          int 16-30 C   target temperature
+# DP  3  temp_current      int 0-35 C    current temperature
+# DP  4  mode              enum          auto | cold | hot | wet | wind
+# DP  5  fan_speed_enum    enum          auto | low | mid | high
+# DP  8  eco               bool          eco mode
+# DP  9  drying            bool          drying/self-clean function
+# DP 10  ventilation       bool          fresh air ventilation
+# DP 11  anion             bool          ioniser
+# DP 12  heat              bool          supplementary heating element
+# DP 13  light             bool          display backlight
+# DP 17  humidity_set      int 40-80 %   target humidity
+# DP 18  humidity_current  int 35-95 %   current humidity
+# DP 19  temp_unit_convert enum [c, f]   display unit, omitted (redundant, HA
+#                                        handles unit conversion natively)
+# DP 23  temp_current_f    int 32-95 F   Fahrenheit mirror of DP 3, omitted
+# DP 24  temp_set_f        int 61-88 F   Fahrenheit mirror of DP 2, omitted
+# DP 101 Sleep             bool          sleep mode
+# DP 102 Continu           bool          continuous run mode (does not cycle
+#                                        off once setpoint is reached)
+# DP 104 model_type        bitmap 8bit   observed constant value 13 during
+#                                        normal fault-free operation. Kept as
+#                                        a raw diagnostic sensor only; NOT
+#                                        treated as a fault indicator, since
+#                                        a stable non-zero value was observed
+#                                        with no fault condition present.
+#                                        Meaning of individual bits unknown.
+# DP 105 Silent            bool          silent/quiet fan mode
+# DP 106 horizontal        bool          horizontal swing louvre
+# DP 107 vertical          bool          vertical swing louvre
+# DP 108 default           string        purpose undocumented, empty on this
+#                                        unit during testing; kept as a
+#                                        diagnostic sensor in case it is
+#                                        populated in other states/firmwares.
+name: Air conditioner
+products:
+  - id: do78tmce5zjjn70c
+    manufacturer: Argo
+    model: Apollo 12HP
+entities:
+  - entity: climate
+    dps:
+      - id: 1
+        type: boolean
+        name: hvac_mode
+        mapping:
+          - dps_val: false
+            value: "off"
+          - dps_val: true
+            constraint: mode
+            conditions:
+              - dps_val: auto
+                value: auto
+              - dps_val: cold
+                value: cool
+              - dps_val: hot
+                value: heat
+              - dps_val: wet
+                value: dry
+              - dps_val: wind
+                value: fan_only
+      - id: 4
+        name: mode
+        type: string
+      - id: 2
+        type: integer
+        name: temperature
+        range:
+          min: 16
+          max: 30
+        unit: C
+      - id: 3
+        type: integer
+        name: current_temperature
+      - id: 5
+        type: string
+        name: fan_mode
+        mapping:
+          - dps_val: auto
+            value: auto
+          - dps_val: low
+            value: low
+          - dps_val: mid
+            value: medium
+          - dps_val: high
+            value: high
+      - id: 17
+        type: integer
+        name: humidity
+        range:
+          min: 40
+          max: 80
+      - id: 18
+        type: integer
+        name: current_humidity
+      - id: 106
+        type: boolean
+        name: swing_horizontal_mode
+        mapping:
+          - dps_val: true
+            value: "on"
+          - dps_val: false
+            value: "off"
+      - id: 107
+        type: boolean
+        name: swing_mode
+        mapping:
+          - dps_val: true
+            value: "on"
+          - dps_val: false
+            value: "off"
+  - entity: switch
+    name: Eco mode
+    category: config
+    icon: "mdi:leaf"
+    dps:
+      - id: 8
+        type: boolean
+        name: switch
+  - entity: switch
+    name: Drying
+    category: config
+    icon: "mdi:water-percent"
+    dps:
+      - id: 9
+        type: boolean
+        name: switch
+  - entity: switch
+    name: Ventilation
+    category: config
+    icon: "mdi:fan"
+    dps:
+      - id: 10
+        type: boolean
+        name: switch
+  - entity: switch
+    translation_key: ionizer
+    category: config
+    dps:
+      - id: 11
+        type: boolean
+        name: switch
+  - entity: switch
+    name: Heat
+    category: config
+    icon: "mdi:fire"
+    dps:
+      - id: 12
+        type: boolean
+        name: switch
+  - entity: light
+    translation_key: display
+    category: config
+    dps:
+      - id: 13
+        type: boolean
+        name: switch
+  - entity: switch
+    translation_key: sleep
+    category: config
+    dps:
+      - id: 101
+        type: boolean
+        name: switch
+  - entity: switch
+    name: Continuous mode
+    category: config
+    icon: "mdi:sync"
+    dps:
+      - id: 102
+        type: boolean
+        name: switch
+  - entity: switch
+    name: Silent mode
+    category: config
+    icon: "mdi:volume-off"
+    dps:
+      - id: 105
+        type: boolean
+        name: switch
+  - entity: sensor
+    name: Model type
+    category: diagnostic
+    dps:
+      - id: 104
+        type: bitfield
+        name: sensor
+  - entity: sensor
+    name: Raw status
+    category: diagnostic
+    dps:
+      - id: 108
+        type: string
+        name: sensor
+        optional: true
